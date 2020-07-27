@@ -47,8 +47,8 @@ func NewZKClient(etcdEps []string) *ZKClient {
 	// p.authf = zetcd.NewAuth(c)
 	// p.ctx = c.Ctx()
 
-	// create a session here
-	s Session;
+	// mock a session here
+	s := NewSessionForLib(c, 0)
 
 	zkf := zetcd.NewZK(c)
 	ret := &ZKClient{zkf(s)}
@@ -57,9 +57,10 @@ func NewZKClient(etcdEps []string) *ZKClient {
 }
 
 
+// not support flags, acl yet
 func (z *ZKClient) Create(path string, data []byte) error {
 	req := &CreateRequest{Path:path, Data:data}
-	resp := z.z.Create(0, creq)
+	resp := z.z.Create(0, req) // mock a id 0 here
 	if resp.Err != nil {
 		return error
 	}
@@ -77,7 +78,7 @@ func (z *ZKClient) Delete(path string, data []byte) error {
 	return nil
 }
 
-func (z *ZKClient) GetData(path string, data []byte) error {
+func (z *ZKClient) Get(path string, data []byte) error {
 	req := &GetDataRequest{Path:path, Data:data}
 	resp := z.z.GetData(0, creq)
 	if resp.Err != nil {
@@ -87,7 +88,7 @@ func (z *ZKClient) GetData(path string, data []byte) error {
 	return nil
 }
 
-func (z *ZKClient) SetData(path string, data []byte) error {
+func (z *ZKClient) Set(path string, data []byte) error {
 	req := &DeleteRequest{Path:path, Data:data}
 	resp := z.z.SetData(0, creq)
 	if resp.Err != nil {
