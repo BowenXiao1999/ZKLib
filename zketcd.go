@@ -302,6 +302,7 @@ func (z *zkEtcd) GetData(xid Xid, op *GetDataRequest) ZKResponse {
 	gets := statGets(p)
 	txnresp, err := z.c.Txn(z.c.Ctx()).Then(gets...).Commit()
 	if err != nil {
+		fmt.Println("Error in GetData")
 		return mkErr(err)
 	}
 
@@ -309,6 +310,7 @@ func (z *zkEtcd) GetData(xid Xid, op *GetDataRequest) ZKResponse {
 
 	datResp := &GetDataResponse{}
 	if datResp.Stat, err = statTxn(op.Path, txnresp); err != nil {
+		fmt.Println("Error in GetData2")
 		return apiErrToZKErr(xid, zxid, err)
 	}
 
@@ -658,9 +660,11 @@ func (z *zkEtcd) doWrappedSTM(xid Xid, applyf func(s v3sync.STM) error, prefetch
 	var apiErr error
 	resp, err := z.doSTM(wrapErr(&apiErr, applyf), prefetch...)
 	if err != nil {
+
 		return nil, mkErr(err)
 	}
 	if apiErr != nil {
+		fmt.Println("Error in Create2")
 		return nil, apiErrToZKErr(xid, ZXid(resp.Header.Revision), apiErr)
 	}
 	return resp, ZKResponse{}
