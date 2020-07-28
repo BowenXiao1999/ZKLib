@@ -7,7 +7,9 @@ import (
 
 func TestCreateAndGet(t *testing.T)  {
 	zk := NewZKClient([]string{"127.0.0.1:2379"})
-	_, err := zk.Create("/test", []byte("9999"), 0, []ACL{ACL{}}) // mock ACL and flags
+
+	// TODO: Flags Sequence Not Work
+	_, err := zk.Create("/test", []byte("9999"), 1, []ACL{ACL{}}) // mock ACL and flags
 	if err != nil {
 		t.Error(err)
 	}

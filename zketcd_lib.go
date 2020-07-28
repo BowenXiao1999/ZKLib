@@ -18,7 +18,7 @@ import (
 	// "bytes"
 	// "encoding/binary"
 	// "encoding/gob"
-	"fmt"
+	// "fmt"
 	// "path"
 	// "strings"
 	// "time"
@@ -70,7 +70,6 @@ func (z *ZKClient) Create(path string, data []byte, flags int32, acl []ACL) (str
 	}
 
 	if resp.Hdr.Err != 0 {
-		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
 		return "", errorCodeToErr[ErrCode(resp.Hdr.Err)]
 	}
 	return resp.Resp.(*CreateResponse).Path, nil
@@ -84,7 +83,6 @@ func (z *ZKClient) Delete(path string, version int32) error {
 	}
 
 	if resp.Hdr.Err != 0 {
-		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
 		return errorCodeToErr[ErrCode(resp.Hdr.Err)] 
 	}
 
@@ -98,7 +96,6 @@ func (z *ZKClient) Get(path string) ([]byte, error) {
 		return []byte{}, resp.Err
 	}
 	if resp.Hdr.Err != 0 {
-		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
 		return []byte{}, errorCodeToErr[ErrCode(resp.Hdr.Err)]
 	}
 	if resp.Resp == nil {
@@ -116,7 +113,6 @@ func (z *ZKClient) Set(path string, data []byte, version int32) (*Stat, error) {
 	}
 
 	if resp.Hdr.Err != 0 {
-		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
 		return &Stat{}, errorCodeToErr[ErrCode(resp.Hdr.Err)]
 	}
 
@@ -130,6 +126,7 @@ func newSessionForLib(c *etcd.Client, id etcd.LeaseID) (*session, error) {
 	ctx, cancel := context.WithCancel(c.Ctx())
 	s := &session{id: id, c: c, watches: newWatches(c)}
 
+	// update the leaseID of session if any
 	kach, kaerr := c.KeepAlive(ctx, id)
 	if kaerr != nil {
 		cancel()
