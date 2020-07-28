@@ -64,7 +64,7 @@ func (z *ZKClient) Create(path string, data []byte, flags int32, acl []ACL) (str
 
 	if resp.Hdr.Err != 0 {
 		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
-		return "", errors.New("Get Error") // TODO: convert errorCode to Error Type
+		return "", errorCodeToErr[ErrCode(resp.Hdr.Err)]
 	}
 	return resp.Resp.(*CreateResponse).Path, nil
 }
@@ -78,7 +78,7 @@ func (z *ZKClient) Delete(path string, version int32) error {
 
 	if resp.Hdr.Err != 0 {
 		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
-		return errors.New("Get Error") // TODO: convert errorCode to Error Type
+		return errorCodeToErr[ErrCode(resp.Hdr.Err)] 
 	}
 
 	return nil
@@ -92,7 +92,7 @@ func (z *ZKClient) Get(path string) ([]byte, error) {
 	}
 	if resp.Hdr.Err != 0 {
 		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
-		return []byte{}, errors.New("Get Error") // TODO: convert errorCode to Error Type
+		return []byte{}, errorCodeToErr[ErrCode(resp.Hdr.Err)]
 	}
 	if resp.Resp == nil {
 		return []byte{}, errors.New("Get Error") // TODO: convert errorCode to Error Type
@@ -110,7 +110,7 @@ func (z *ZKClient) Set(path string, data []byte, version int32) (*Stat, error) {
 
 	if resp.Hdr.Err != 0 {
 		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
-		return &Stat{}, errors.New("Get Error") // TODO: convert errorCode to Error Type
+		return &Stat{}, errorCodeToErr[ErrCode(resp.Hdr.Err)]
 	}
 
 	return &resp.Resp.(*SetDataResponse).Stat, nil
