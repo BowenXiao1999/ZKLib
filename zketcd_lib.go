@@ -38,22 +38,15 @@ type ZKClient struct {
 
 
 func NewZKClient(etcdEps []string) *ZKClient {
-	// talk to the etcd3 server
-	// create a etcd
+	// talk to the etcd3 server and new a etcd client
 	cfg := etcd.Config{Endpoints: etcdEps}
 	c, err := etcd.New(cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	// p.authf = zetcd.NewAuth(c)
-	// p.ctx = c.Ctx()
-
-	// mock a session here
+	// mock a session and new a ZKEtcd
 	s, _ := newSessionForLib(c, 0)
-
-	// zkf := NewZK(c)
-	// zk, _ := zkf(s)
 	zk := NewZKEtcd(c, s)
 	ret := &ZKClient{zk.(*zkEtcd)}
 	
@@ -62,21 +55,30 @@ func NewZKClient(etcdEps []string) *ZKClient {
 
 
 // not support flags, acl yet
-func (z *ZKClient) Create(path string, data []byte) error {
-	req := &CreateRequest{Path:path, Data:data, Acl:[]ACL{ACL{}}}
-	resp := z.z.Create(0, req) // mock a id 0 here
+func (z *ZKClient) Create(path string, data []byte, flags int32, acl []ACL) (string, error) {
+	req := &CreateRequest{Path:path, Data:data, Acl:acl, Flags:flags}
+	resp := z.z.Create(0, req) // mock a Xid 0 
 	if resp.Err != nil {
-		return errors.New("Create Error")
+		return "", resp.Err 
 	}
-	fmt.Printf("Error Code %d\n", resp.Hdr.Err)
-	return nil
+
+	if resp.Hdr.Err != 0 {
+		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
+		return "", errors.New("Get Error") // TODO: convert errorCode to Error Type
+	}
+	return resp.Resp.(*CreateResponse).Path, nil
 }
 
-func (z *ZKClient) Delete(path string, data []byte) error {
-	req := &DeleteRequest{Path:path}
+func (z *ZKClient) Delete(path string, version int32) error {
+	req := &DeleteRequest{Path:path,  Version:Ver(version)}
 	resp := z.z.Delete(0, req)
 	if resp.Err != nil {
-		return errors.New("Delete Error")
+		return resp.Err
+	}
+
+	if resp.Hdr.Err != 0 {
+		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
+		return errors.New("Get Error") // TODO: convert errorCode to Error Type
 	}
 
 	return nil
@@ -86,24 +88,32 @@ func (z *ZKClient) Get(path string) ([]byte, error) {
 	req := &GetDataRequest{Path:path}
 	resp := z.z.GetData(0, req)
 	if resp.Err != nil {
-		return resp.Resp.(*GetDataResponse).Data, errors.New("Delete Error")
+		return []byte{}, resp.Err
+	}
+	if resp.Hdr.Err != 0 {
+		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
+		return []byte{}, errors.New("Get Error") // TODO: convert errorCode to Error Type
 	}
 	if resp.Resp == nil {
-		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
-		return []byte{}, errors.New("Get Error")
+		return []byte{}, errors.New("Get Error") // TODO: convert errorCode to Error Type
 	}
 
 	return resp.Resp.(*GetDataResponse).Data, nil
 }
 
-func (z *ZKClient) Set(path string, data []byte) error {
+func (z *ZKClient) Set(path string, data []byte, version int32) (*Stat, error) {
 	req := &SetDataRequest{Path:path, Data:data}
 	resp := z.z.SetData(0, req)
 	if resp.Err != nil {
-		return errors.New("Delete Error")
+		return &Stat{}, resp.Err
 	}
 
-	return nil
+	if resp.Hdr.Err != 0 {
+		fmt.Printf("Error Code %d\n", resp.Hdr.Err)
+		return &Stat{}, errors.New("Get Error") // TODO: convert errorCode to Error Type
+	}
+
+	return &resp.Resp.(*SetDataResponse).Stat, nil
 }
 
 /*
@@ -119,6 +129,7 @@ func newSessionForLib(c *etcd.Client, id etcd.LeaseID) (*session, error) {
 		return nil, kaerr
 	}
 
+	// // do not need session in lib
 	// go func() {
 	// 	glog.V(9).Infof("starting the session... id=%v", id)
 	// 	defer func() {
