@@ -53,7 +53,6 @@ func NewZKClient(etcdEps []string) *ZKClient {
 	return ret
 }
 
-
 // not support flags, acl yet
 func (z *ZKClient) Create(path string, data []byte, flags int32, acl []ACL) (string, error) {
 	req := &CreateRequest{Path:path, Data:data, Acl:acl, Flags:flags}

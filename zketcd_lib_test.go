@@ -30,7 +30,7 @@ func TestSetAndGet(t *testing.T)  {
 	resp, err := zk.Get("/test")	
 	// expect to be 8888
 	if string(resp) != "8888" {
-		t.Error()
+		t.Error(err)
 	}
 }
 
@@ -38,12 +38,12 @@ func TestDeleteAndGet(t *testing.T) {
 	zk := NewZKClient([]string{"127.0.0.1:2379"})
 	err := zk.Delete("/test", -1)
 	if err != nil {
-		t.Error()
+		t.Error(err)
 	}
 
 	resp, err := zk.Get("/test")	
 	// expect to be empty and get a log Error Code -101 (Node Not Found)
 	if string(resp) != "" {
-		t.Error()
+		t.Error(err)
 	}
 }
