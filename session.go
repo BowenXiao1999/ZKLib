@@ -97,4 +97,3 @@ func (s *session) ZXid() ZXid {
 	s.mu.RUnlock()
 	return zxid
 }
-

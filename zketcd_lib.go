@@ -26,7 +26,9 @@ import (
 	etcd "github.com/coreos/etcd/clientv3"
 	"errors"
 	// v3sync "github.com/coreos/etcd/clientv3/concurrency"
-	// "github.com/golang/glog"
+
+	// "net"
+	"github.com/golang/glog"
 	"context"
 )
 
@@ -45,8 +47,14 @@ func NewZKClient(etcdEps []string) *ZKClient {
 		panic(err)
 	}
 
-	// mock a session and new a ZKEtcd
+	// 1. mock a session and new a ZKEtcd
 	s, _ := newSessionForLib(c, 0)
+
+	// // 2. mock a conn (seems not work)
+	// cn, _ := net.Dial("tcp", "127.0.0.1:http")
+	// con := NewConn(cn)
+	// s, _ := newSession(c, con, etcd.LeaseID(0))
+
 	zk := NewZKEtcd(c, s)
 	ret := &ZKClient{zk.(*zkEtcd)}
 	
@@ -122,37 +130,39 @@ func newSessionForLib(c *etcd.Client, id etcd.LeaseID) (*session, error) {
 	ctx, cancel := context.WithCancel(c.Ctx())
 	s := &session{id: id, c: c, watches: newWatches(c)}
 
-	_, kaerr := c.KeepAlive(ctx, id)
+	kach, kaerr := c.KeepAlive(ctx, id)
 	if kaerr != nil {
 		cancel()
 		return nil, kaerr
 	}
 
-	// // do not need session in lib
-	// go func() {
-	// 	glog.V(9).Infof("starting the session... id=%v", id)
-	// 	defer func() {
-	// 		glog.V(9).Infof("finishing the session... id=%v; expect revoke...", id)
-	// 		cancel()
-	// 		s.Close()
-	// 	}()
-	// 	for {
-	// 		select {
-	// 		case ka, ok := <-kach:
-	// 			if !ok {
-	// 				return
-	// 			}
-	// 			if ka.ResponseHeader == nil {
-	// 				continue
-	// 			}
-	// 			s.mu.Lock()
-	// 			s.leaseZXid = ZXid(ka.ResponseHeader.Revision)
-	// 			s.mu.Unlock()
-	// 		case <-s.StopNotify():
-	// 			return
-	// 		}
-	// 	}
-	// }()
+	// do not need session in lib
+	go func() {
+		glog.V(9).Infof("starting the session... id=%v", id)
+		defer func() {
+			glog.V(9).Infof("finishing the session... id=%v; expect revoke...", id)
+			cancel()
+
+			// s.Close() // hack for conn not exist
+			s.watches.close()
+		}()
+		for {
+			select {
+			case ka, ok := <-kach:
+				if !ok {
+					return
+				}
+				if ka.ResponseHeader == nil {
+					continue
+				}
+				s.mu.Lock()
+				s.leaseZXid = ZXid(ka.ResponseHeader.Revision)
+				s.mu.Unlock()
+			// case <-s.StopNotify():
+			// 	return
+			}
+		}
+	}()
 
 	return s, nil
 }
