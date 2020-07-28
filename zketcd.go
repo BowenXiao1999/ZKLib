@@ -310,7 +310,7 @@ func (z *zkEtcd) GetData(xid Xid, op *GetDataRequest) ZKResponse {
 
 	datResp := &GetDataResponse{}
 	if datResp.Stat, err = statTxn(op.Path, txnresp); err != nil {
-		fmt.Println("Error in GetData2")
+		// fmt.Println("Error in GetData2")
 		return apiErrToZKErr(xid, zxid, err)
 	}
 
