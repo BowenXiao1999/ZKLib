@@ -106,7 +106,7 @@ func (z *ZKClient) Get(path string) ([]byte, error) {
 }
 
 func (z *ZKClient) Set(path string, data []byte, version int32) (*Stat, error) {
-	req := &SetDataRequest{Path:path, Data:data}
+	req := &SetDataRequest{Path:path, Data:data, Version:Ver(version)}
 	resp := z.z.SetData(0, req)
 	if resp.Err != nil {
 		return &Stat{}, resp.Err
@@ -163,5 +163,7 @@ func newSessionForLib(c *etcd.Client, id etcd.LeaseID) (*session, error) {
 
 	return s, nil
 }
+
+
 
 
