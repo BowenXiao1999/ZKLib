@@ -114,5 +114,4 @@ func TestCreateAndGetSequence(t *testing.T)  {
 		t.Error(err)
 	}
 
-	// err = zk.Delete(Path, -1)	
 }
