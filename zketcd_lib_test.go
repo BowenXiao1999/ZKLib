@@ -4,17 +4,24 @@ import (
 	"testing"
 )
 
+var (
+	Path string = "/test1"
+	SequencePath string = "/test2"
 
-func TestCreateAndGet(t *testing.T)  {
+)
+
+func TestCreateAndGetEmphereal(t *testing.T)  {
 	zk := NewZKClient([]string{"127.0.0.1:2379"})
 
+	_ = zk.Delete(Path, -1)
+
 	// TODO: Flags Sequence Not Work
-	_, err := zk.Create("/test", []byte("9999"), 1, []ACL{ACL{}}) // mock ACL and flags
+	_, err := zk.Create(Path, []byte("9999"), 1, []ACL{ACL{}}) // mock ACL and flags
 	if err != nil {
 		t.Error(err)
 	}
 
-	resp, err := zk.Get("/test")	
+	resp, err := zk.Get(Path)	
 	// expect to be 9999
 	if string(resp) != "9999" {
 		t.Error(err)
@@ -24,26 +31,30 @@ func TestCreateAndGet(t *testing.T)  {
 
 func TestSetAndGet(t *testing.T)  {
 	zk := NewZKClient([]string{"127.0.0.1:2379"})
-	_, err := zk.Set("/test", []byte("8888"), -1)
+	// err = zk.Delete(Path, -1)
+
+	_, err := zk.Set(Path, []byte("8888"), -1)
 	if err != nil {
 		t.Error(err)
 	}
 
-	resp, err := zk.Get("/test")	
+	resp, err := zk.Get(Path)	
 	// expect to be 8888
 	if string(resp) != "8888" {
 		t.Error(err)
 	}
+
+	err = zk.Delete(Path, -1)
 }
 
 func TestDeleteAndGet(t *testing.T) {
 	zk := NewZKClient([]string{"127.0.0.1:2379"})
-	err := zk.Delete("/test", -1)
-	if err != nil {
+	err := zk.Delete(Path, -1)
+	if err != ErrNoNode {
 		t.Error(err)
 	}
 
-	resp, err := zk.Get("/test")	
+	resp, err := zk.Get(Path)	
 	// expect to be empty and get a log Error Code -101 (Node Not Found)
 	if string(resp) != "" {
 		t.Error(err)
@@ -52,30 +63,56 @@ func TestDeleteAndGet(t *testing.T) {
 
 func TestVersionSetAndDelete(t *testing.T) {
 	zk := NewZKClient([]string{"127.0.0.1:2379"})
-	_, err := zk.Create("/test", []byte("9999"), 1, []ACL{ACL{}}) // mock ACL and flags
+	_, err := zk.Create(Path, []byte("9999"), 1, []ACL{ACL{}}) // mock ACL and flags
 	if err != nil {
 		t.Error(err)
 	}
 	
-	_, err = zk.Set("/test", []byte("8888"), 2)
+	_, err = zk.Set(Path, []byte("8888"), 2)
 	if err != ErrBadVersion {
 		t.Error(err)
 	}
 
-	_, err = zk.Set("/test", []byte("8888"), 0)
+	_, err = zk.Set(Path, []byte("8888"), 0)
 	if err != nil {
 		t.Error(err)
 	}
 
 	// expect to get a ErrBadVersion
-	err = zk.Delete("/test", 2)	
+	err = zk.Delete(Path, 2)	
 	if err != ErrBadVersion {
 		t.Error(err)
 	}
 
 
-	err = zk.Delete("/test", 1)	
+	err = zk.Delete(Path, 1)	
 	if err != nil {
 		t.Error(err)
 	}
+}
+
+func TestCreateAndGetSequence(t *testing.T)  {
+	zk := NewZKClient([]string{"127.0.0.1:2379"})
+
+	err := zk.Delete(SequencePath, -1)	
+
+
+	// TODO: Flags Sequence Not Work
+	_, err = zk.Create(SequencePath, []byte("9999"), 1, []ACL{ACL{}}) // mock ACL and flags
+	// if err != nil {
+	// 	t.Error(err)
+	// }
+
+	_, err = zk.Create(SequencePath+"/app", []byte("9999"), 2, []ACL{ACL{}}) // mock ACL and flags
+	if err != nil {
+		t.Error(err)
+	}
+
+	resp, err := zk.Get(SequencePath + "/app0000000001")	
+	// expect to be 9999
+	if string(resp) != "9999" {
+		t.Error(err)
+	}
+
+	// err = zk.Delete(Path, -1)	
 }
