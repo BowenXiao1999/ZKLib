@@ -1,6 +1,6 @@
 # ZKLib
 
-This project is based on ![zetcd](https://github.com/etcd-io/zetcd). 
+This project is based on [zetcd](https://github.com/etcd-io/zetcd). 
 
 New changes are you can use it as a library instead of client request. 
 
