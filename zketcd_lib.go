@@ -32,9 +32,12 @@ import (
 	"context"
 )
 
+type wrapZKEtcd struct {
+	*zkEtcd
+}
 
 type ZKClient struct {
-	z *zkEtcd
+	z *wrapZKEtcd
 }
 
 
@@ -55,8 +58,9 @@ func NewZKClient(etcdEps []string) *ZKClient {
 	// con := NewConn(cn)
 	// s, _ := newSession(c, con, etcd.LeaseID(0))
 
-	zk := NewZKEtcd(c, s)
-	ret := &ZKClient{zk.(*zkEtcd)}
+	zk := NewZKEtcd(c, s).(*zkEtcd)
+	wrapZK := &wrapZKEtcd{zk}
+	ret := &ZKClient{wrapZK}
 	
 	return ret
 }
@@ -165,16 +169,16 @@ func newSessionForLib(c *etcd.Client, id etcd.LeaseID) (*session, error) {
 }
 
 // TODO
-func (z *ZKClient) Exists(path string) (bool, *Stat, error) {
+func (z *ZKClient) Exists(path string) {
 	
 }
-func (z *ZKClient) Multi (path string) (bool, *Stat, error) {
+func (z *ZKClient) Multi (path string) {
 	
 }
-func (z *ZKClient) Sync(path string) (bool, *Stat, error) {
+func (z *ZKClient) Sync(path string) {
 	
 }
-func (z *ZKClient) ExistsW(path string) (bool, *Stat, error) {
+func (z *ZKClient) ExistsW(path string) {
 	
 }
 
