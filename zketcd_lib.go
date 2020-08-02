@@ -169,19 +169,39 @@ func newSessionForLib(c *etcd.Client, id etcd.LeaseID) (*session, error) {
 }
 
 // TODO
-func (z *ZKClient) Exists(path string) {
-	
+func (z *ZKClient) Exists(path string) (bool, *Stat, error) {
+	req := &ExistsRequest{Path:path}
+	resp := z.z.Exists(0, req) // mock a Xid 0 
+	if resp.Err != nil {
+		return false, &Stat{}, resp.Err 
+	}
+
+	if resp.Hdr.Err != 0 {
+		return false, &Stat{}, errorCodeToErr[ErrCode(resp.Hdr.Err)]
+	}
+	// return resp.Resp.(statResponse), nil
+	return true, &resp.Resp.(*ExistsResponse).Stat, nil
 }
-func (z *ZKClient) Multi(path string) {
-	
-}
-func (z *ZKClient) Sync(path string) {
-	
-}
-func (z *ZKClient) ExistsW(path string) {
-	
+func (z *ZKClient) ExistsW(path string) (bool, *Stat, error)  {
+	req := &SetWatchesRequest{}
+	resp := z.z.SetWatches(0, req) // mock a Xid 0 
+	if resp.Err != nil {
+		return false, &Stat{}, resp.Err 
+	}
+
+	if resp.Hdr.Err != 0 {
+		return false, &Stat{}, errorCodeToErr[ErrCode(resp.Hdr.Err)]
+	}
+	// return resp.Resp.(statResponse), nil
+	return true, &resp.Resp.(*ExistsResponse).Stat, nil
 }
 
+// func (z *ZKClient) Multi(path string) {
+	
+// }
+// func (z *ZKClient) Sync(path string) {
+	
+// }
 func (z *wrapZKEtcd) SetWatches(xid Xid, op *SetWatchesRequest) ZKResponse {
 	for _, dw := range op.DataWatches {
 		dataPath := dw
