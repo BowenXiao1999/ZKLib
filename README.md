@@ -1,6 +1,6 @@
 # ZKLib
 
-This project is based on ![zetcd](github.com/etcd-io/zetcd). 
+This project is based on ![zetcd](https://github.com/etcd-io/zetcd). 
 
 New changes are you can use it as a library instead of client request. 
 
@@ -11,4 +11,4 @@ We try to pack Zetcd into a library instead of a server to make it a binary rele
 
 
 ## How to use it?
-See ![](./zjetcd_lib.go) and ![](./zjetcd_lib_test.go) for more info.  
+See [API](./zjetcd_lib.go) and [DEMO](./zjetcd_lib_test.go) for more info.  
