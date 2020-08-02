@@ -164,6 +164,20 @@ func newSessionForLib(c *etcd.Client, id etcd.LeaseID) (*session, error) {
 	return s, nil
 }
 
+// TODO
+func (z *ZKClient) Exists(path string) (bool, *Stat, error) {
+	
+}
+func (z *ZKClient) Multi (path string) (bool, *Stat, error) {
+	
+}
+func (z *ZKClient) Sync(path string) (bool, *Stat, error) {
+	
+}
+func (z *ZKClient) ExistsW(path string) (bool, *Stat, error) {
+	
+}
+
 
 
 
