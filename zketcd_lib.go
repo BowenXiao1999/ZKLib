@@ -172,7 +172,7 @@ func newSessionForLib(c *etcd.Client, id etcd.LeaseID) (*session, error) {
 func (z *ZKClient) Exists(path string) {
 	
 }
-func (z *ZKClient) Multi (path string) {
+func (z *ZKClient) Multi(path string) {
 	
 }
 func (z *ZKClient) Sync(path string) {
@@ -182,6 +182,76 @@ func (z *ZKClient) ExistsW(path string) {
 	
 }
 
+func (z *wrapZKEtcd) SetWatches(xid Xid, op *SetWatchesRequest) ZKResponse {
+	for _, dw := range op.DataWatches {
+		dataPath := dw
+		p := mkPath(dataPath)
+		f := func(newzxid ZXid, evt EventType) {
+			wresp := &WatcherEvent{
+				Type:  evt,
+				State: StateSyncConnected,
+				Path:  dataPath,
+			}
+			glog.V(7).Infof("WatchData* (%v,%v,%v)", xid, newzxid, *wresp)
+			// z.s.Send(-1, -1, wresp)
+			// TODO: invoke the callback instead of sending resp in connection
+		}
+		z.s.Watch(op.RelativeZxid, xid, p, EventNodeDataChanged, f)
+	}
+
+	ops := make([]etcd.Op, len(op.ExistWatches))
+	for i, ew := range op.ExistWatches {
+		ops[i] = etcd.OpGet(
+			mkPathVer(mkPath(ew)),
+			etcd.WithSerializable(),
+			etcd.WithRev(int64(op.RelativeZxid)))
+	}
+
+	resp, err := z.c.Txn(z.c.Ctx()).Then(ops...).Commit()
+	if err != nil {
+		return mkErr(err)
+	}
+	curZXid := ZXid(resp.Header.Revision)
+
+	for i, ew := range op.ExistWatches {
+		existPath := ew
+		p := mkPath(existPath)
+
+		ev := EventNodeDeleted
+		if len(resp.Responses[i].GetResponseRange().Kvs) == 0 {
+			ev = EventNodeCreated
+		}
+		f := func(newzxid ZXid, evt EventType) {
+			wresp := &WatcherEvent{
+				Type:  evt,
+				State: StateSyncConnected,
+				Path:  existPath,
+			}
+			glog.V(7).Infof("WatchExist* (%v,%v,%v)", xid, newzxid, *wresp)
+			// z.s.Send(-1, -1, wresp)
+		}
+		z.s.Watch(op.RelativeZxid, xid, p, ev, f)
+	}
+	for _, cw := range op.ChildWatches {
+		childPath := cw
+		p := mkPath(childPath)
+		f := func(newzxid ZXid, evt EventType) {
+			wresp := &WatcherEvent{
+				Type:  EventNodeChildrenChanged,
+				State: StateSyncConnected,
+				Path:  childPath,
+			}
+			glog.V(7).Infof("WatchChild* (%v,%v,%v)", xid, newzxid, *wresp)
+			// z.s.Send(-1, -1, wresp)
+		}
+		z.s.Watch(op.RelativeZxid, xid, p, EventNodeChildrenChanged, f)
+	}
+
+	swresp := &SetWatchesResponse{}
+
+	glog.V(7).Infof("SetWatches(%v) = (zxid=%v, resp=%+v)", xid, curZXid, *swresp)
+	return mkZKResp(xid, curZXid, swresp)
+}
 
 
 
