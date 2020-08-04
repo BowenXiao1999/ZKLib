@@ -20,6 +20,8 @@ import (
 	etcd "github.com/coreos/etcd/clientv3"
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
+
+	// "fmt"
 )
 
 type Watches interface {
