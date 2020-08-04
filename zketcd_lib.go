@@ -18,7 +18,7 @@ import (
 	// "bytes"
 	// "encoding/binary"
 	// "encoding/gob"
-	// "fmt"
+	"fmt"
 	// "path"
 	// "strings"
 	// "time"
@@ -34,6 +34,7 @@ import (
 
 type wrapZKEtcd struct {
 	*zkEtcd
+	cb callback
 }
 
 type ZKClient struct {
@@ -59,7 +60,7 @@ func NewZKClient(etcdEps []string) *ZKClient {
 	// s, _ := newSession(c, con, etcd.LeaseID(0))
 
 	zk := NewZKEtcd(c, s).(*zkEtcd)
-	wrapZK := &wrapZKEtcd{zk}
+	wrapZK := &wrapZKEtcd{zk, emptyCB}
 	ret := &ZKClient{wrapZK}
 	
 	return ret
@@ -183,7 +184,9 @@ func (z *ZKClient) Exists(path string) (bool, *Stat, error) {
 	return true, &resp.Resp.(*ExistsResponse).Stat, nil
 }
 func (z *ZKClient) ExistsW(path string) (bool, *Stat, error)  {
-	req := &SetWatchesRequest{}
+
+	// TODO: do SetWatchRequest
+	req := &SetWatchesRequest{DataWatches:[]string{path}, ExistWatches:[]string{path}}
 	resp := z.z.SetWatches(0, req) // mock a Xid 0 
 	if resp.Err != nil {
 		return false, &Stat{}, resp.Err 
@@ -193,16 +196,12 @@ func (z *ZKClient) ExistsW(path string) (bool, *Stat, error)  {
 		return false, &Stat{}, errorCodeToErr[ErrCode(resp.Hdr.Err)]
 	}
 	// return resp.Resp.(statResponse), nil
-	return true, &resp.Resp.(*ExistsResponse).Stat, nil
+	// return true, &resp.Resp.(*SetWatchesResponse).Stat, nil
+	return true, &Stat{}, nil
 }
 
-// func (z *ZKClient) Multi(path string) {
-	
-// }
-// func (z *ZKClient) Sync(path string) {
-	
-// }
 func (z *wrapZKEtcd) SetWatches(xid Xid, op *SetWatchesRequest) ZKResponse {
+
 	for _, dw := range op.DataWatches {
 		dataPath := dw
 		p := mkPath(dataPath)
@@ -215,6 +214,7 @@ func (z *wrapZKEtcd) SetWatches(xid Xid, op *SetWatchesRequest) ZKResponse {
 			glog.V(7).Infof("WatchData* (%v,%v,%v)", xid, newzxid, *wresp)
 			// z.s.Send(-1, -1, wresp)
 			// TODO: invoke the callback instead of sending resp in connection
+			z.cb(wresp)
 		}
 		z.s.Watch(op.RelativeZxid, xid, p, EventNodeDataChanged, f)
 	}
@@ -249,6 +249,7 @@ func (z *wrapZKEtcd) SetWatches(xid Xid, op *SetWatchesRequest) ZKResponse {
 			}
 			glog.V(7).Infof("WatchExist* (%v,%v,%v)", xid, newzxid, *wresp)
 			// z.s.Send(-1, -1, wresp)
+			z.cb(wresp)
 		}
 		z.s.Watch(op.RelativeZxid, xid, p, ev, f)
 	}
@@ -263,6 +264,7 @@ func (z *wrapZKEtcd) SetWatches(xid Xid, op *SetWatchesRequest) ZKResponse {
 			}
 			glog.V(7).Infof("WatchChild* (%v,%v,%v)", xid, newzxid, *wresp)
 			// z.s.Send(-1, -1, wresp)
+			z.cb(wresp)
 		}
 		z.s.Watch(op.RelativeZxid, xid, p, EventNodeChildrenChanged, f)
 	}
@@ -273,5 +275,13 @@ func (z *wrapZKEtcd) SetWatches(xid Xid, op *SetWatchesRequest) ZKResponse {
 	return mkZKResp(xid, curZXid, swresp)
 }
 
+func (z *ZKClient) setCallBack(c callback) {
+	z.z.cb = c;
+}
 
+type callback func(w *WatcherEvent) 
+
+func emptyCB(w *WatcherEvent)  {
+	
+}
 
