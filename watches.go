@@ -21,7 +21,7 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 
-	// "fmt"
+	"fmt"
 )
 
 type Watches interface {
@@ -134,6 +134,7 @@ func (ws *watches) runWatch(w *watch, cb WatchHandler) {
 	}()
 	for {
 		select {
+		fmt.Println("Begin")
 		case resp, ok := <-w.wch:
 			if !ok {
 				return
