@@ -122,20 +122,18 @@ func TestWatches(t *testing.T)  {
 	zk.setCallBack(testCallBack)
 	_ = zk.Delete(Path, -1)
 
-	// listen
 	_, _, err := zk.ExistsW(Path)
 	if err != nil {
 		t.Error(err)
 	}
-
 	// TODO: Flags Sequence Not Work
-	_, err = zk.Create(Path, []byte("9999"), 1, []ACL{ACL{}}) // mock ACL and flags
+	_, err = zk.Create(Path, []byte("9999"), 0, []ACL{ACL{}}) // mock ACL and flags
 	if err != nil {
 		t.Error(err)
 	}
 
 
-	// listen again
+	// listen
 	_, _, err = zk.ExistsW(Path)
 	if err != nil {
 		t.Error(err)
