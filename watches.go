@@ -134,8 +134,8 @@ func (ws *watches) runWatch(w *watch, cb WatchHandler) {
 	}()
 	for {
 		select {
-		fmt.Println("Begin")
 		case resp, ok := <-w.wch:
+			fmt.Println("In Watches")
 			if !ok {
 				return
 			}
