@@ -3,6 +3,8 @@ package zetcd
 import (
 	"testing"
 	"fmt"
+
+	"time"
 )
 
 var (
@@ -121,26 +123,27 @@ func TestWatches(t *testing.T)  {
 	zk := NewZKClient([]string{"127.0.0.1:2379"})
 	zk.setCallBack(testCallBack)
 	_ = zk.Delete(Path, -1)
-
-	_, _, err := zk.ExistsW(Path)
+	time.Sleep(100 * time.Millisecond)
+	// _, _, err := zk.ExistsW(Path)
+	// if err != nil {
+	// 	t.Error(err)
+	// }
+	_, err := zk.Create(Path, []byte("9999"), 0, []ACL{ACL{}}) // mock ACL and flags
 	if err != nil {
 		t.Error(err)
 	}
-	// TODO: Flags Sequence Not Work
-	_, err = zk.Create(Path, []byte("9999"), 0, []ACL{ACL{}}) // mock ACL and flags
-	if err != nil {
-		t.Error(err)
-	}
 
-
+	time.Sleep(100 * time.Millisecond)
 	// listen
 	_, _, err = zk.ExistsW(Path)
 	if err != nil {
 		t.Error(err)
 	}
-
+	time.Sleep(100 * time.Millisecond)
 
 	_ = zk.Delete(Path, -1)
+
+	time.Sleep(100 * time.Millisecond)
 }
 
 // zk watch 回调函数

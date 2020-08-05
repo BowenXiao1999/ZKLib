@@ -21,7 +21,7 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 
-	// "fmt"
+	"fmt"
 )
 
 type Watches interface {
@@ -105,9 +105,9 @@ func (ws *watches) Watch(rev ZXid, xid Xid, path string, evtype EventType, cb Wa
 	// use rev+1 watch begins AFTER the requested zxid
 	case EventNodeDeleted:
 		// fmt.Println("In Watches")
-		// wch = ws.c.Watch(ctx, mkPathKey(path), etcd.WithRev(-1))
+		// wch = ws.c.Watch(ctx, mkPathKey(path), etcd.WithRev(int64(rev+1)))
 		// FIXME TODO
-		wch = ws.c.Watch(context.TODO(), mkPathKey(path))
+		wch = ws.c.Watch(context.TODO(), mkPathKey(path), etcd.WithRev(int64(rev+1)))
 	case EventNodeChildrenChanged:
 		wch = ws.c.Watch(
 			ctx,
@@ -139,13 +139,13 @@ func (ws *watches) runWatch(w *watch, cb WatchHandler) {
 	for {
 		select {
 		case resp, ok := <-w.wch:
-			// fmt.Println("Not OK")
 			if !ok {
 				return
 			}
 			if len(resp.Events) == 0 {
 				continue
 			}
+			fmt.Println("Not OK")
 			evtype := ev2evtype(resp.Events[0])
 			ws.mu.Lock()
 			delete(ws.path2watch[w.evtype], w.path)

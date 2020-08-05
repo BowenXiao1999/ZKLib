@@ -18,7 +18,7 @@ import (
 	// "bytes"
 	// "encoding/binary"
 	// "encoding/gob"
-	// "fmt"
+	"fmt"
 	// "path"
 	// "strings"
 	// "time"
@@ -35,6 +35,7 @@ import (
 type wrapZKEtcd struct {
 	*zkEtcd
 	cb callback
+	lastZxid ZXid
 }
 
 type ZKClient struct {
@@ -60,7 +61,7 @@ func NewZKClient(etcdEps []string) *ZKClient {
 	// s, _ := newSession(c, con, etcd.LeaseID(0))
 
 	zk := NewZKEtcd(c, s).(*zkEtcd)
-	wrapZK := &wrapZKEtcd{zk, emptyCB}
+	wrapZK := &wrapZKEtcd{zk, emptyCB, 0}
 	ret := &ZKClient{wrapZK}
 	
 	return ret
@@ -77,6 +78,9 @@ func (z *ZKClient) Create(path string, data []byte, flags int32, acl []ACL) (str
 	if resp.Hdr.Err != 0 {
 		return "", errorCodeToErr[ErrCode(resp.Hdr.Err)]
 	}
+	fmt.Printf("%d\n", resp.Hdr.Zxid)
+
+	z.z.lastZxid = resp.Hdr.Zxid
 	return resp.Resp.(*CreateResponse).Path, nil
 }
 
@@ -91,6 +95,7 @@ func (z *ZKClient) Delete(path string, version int32) error {
 		return errorCodeToErr[ErrCode(resp.Hdr.Err)] 
 	}
 
+	z.z.lastZxid = resp.Hdr.Zxid
 	return nil
 }
 
@@ -107,6 +112,7 @@ func (z *ZKClient) Get(path string) ([]byte, error) {
 		return []byte{}, errors.New("Get Error") // TODO: convert errorCode to Error Type
 	}
 
+	z.z.lastZxid = resp.Hdr.Zxid
 	return resp.Resp.(*GetDataResponse).Data, nil
 }
 
@@ -121,6 +127,7 @@ func (z *ZKClient) Set(path string, data []byte, version int32) (*Stat, error) {
 		return &Stat{}, errorCodeToErr[ErrCode(resp.Hdr.Err)]
 	}
 
+	z.z.lastZxid = resp.Hdr.Zxid
 	return &resp.Resp.(*SetDataResponse).Stat, nil
 }
 
@@ -186,7 +193,7 @@ func (z *ZKClient) Exists(path string) (bool, *Stat, error) {
 func (z *ZKClient) ExistsW(path string) (bool, *Stat, error)  {
 
 	// TODO: do SetWatchRequest
-	req := &SetWatchesRequest{DataWatches:[]string{path}, RelativeZxid:0}
+	req := &SetWatchesRequest{DataWatches:[]string{path}, RelativeZxid:ZXid(z.z.lastZxid)}
 	resp := z.z.SetWatches(0, req) // mock a Xid 0 
 	if resp.Err != nil {
 		return false, &Stat{}, resp.Err 
@@ -197,6 +204,7 @@ func (z *ZKClient) ExistsW(path string) (bool, *Stat, error)  {
 	}
 	// return resp.Resp.(statResponse), nil
 	// return true, &resp.Resp.(*SetWatchesResponse).Stat, nil
+	z.z.lastZxid = resp.Hdr.Zxid
 	return true, &Stat{}, nil
 }
 
