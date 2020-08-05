@@ -186,7 +186,7 @@ func (z *ZKClient) Exists(path string) (bool, *Stat, error) {
 func (z *ZKClient) ExistsW(path string) (bool, *Stat, error)  {
 
 	// TODO: do SetWatchRequest
-	req := &SetWatchesRequest{DataWatches:[]string{path}}
+	req := &SetWatchesRequest{DataWatches:[]string{path}, RelativeZxid:1}
 	resp := z.z.SetWatches(0, req) // mock a Xid 0 
 	if resp.Err != nil {
 		return false, &Stat{}, resp.Err 

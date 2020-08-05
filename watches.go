@@ -105,7 +105,7 @@ func (ws *watches) Watch(rev ZXid, xid Xid, path string, evtype EventType, cb Wa
 	// use rev+1 watch begins AFTER the requested zxid
 	case EventNodeDeleted:
 		// fmt.Println("In Watches")
-		// wch = ws.c.Watch(ctx, mkPathKey(path), etcd.WithRev(int64(rev+1))
+		// wch = ws.c.Watch(ctx, mkPathKey(path), etcd.WithRev(int64(rev+1)))
 		// FIXME TODO
 		wch = ws.c.Watch(context.TODO(), mkPathKey(path))
 	case EventNodeChildrenChanged:
