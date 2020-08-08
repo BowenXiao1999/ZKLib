@@ -1,5 +1,7 @@
 # ZKLib
 
+By Bowen Xiao
+
 This project is based on [zetcd](https://github.com/etcd-io/zetcd). 
 
 New changes are you can use it as a library instead of client request. 
@@ -12,3 +14,9 @@ We try to pack Zetcd into a library instead of a server to make it a binary rele
 
 ## How to use it?
 See [API](./zjetcd_lib.go) and [DEMO](./zjetcd_lib_test.go) for more info.  
+
+
+## Test
+1. Run Etcd/PD in local environment (standalone mode)
+
+2. Run go test
