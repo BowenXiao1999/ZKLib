@@ -188,8 +188,40 @@ func (z *ZKClient) Exists(path string) (bool, *Stat, error) {
 		return false, &Stat{}, errorCodeToErr[ErrCode(resp.Hdr.Err)]
 	}
 	// return resp.Resp.(statResponse), nil
+	z.z.lastZxid = resp.Hdr.Zxid
 	return true, &resp.Resp.(*ExistsResponse).Stat, nil
 }
+
+func (z *ZKClient) Children(path string) ([]string, *Stat, error) {
+	req := &GetChildrenRequest{Path:path}
+	resp := z.z.GetChildren(0, req) // mock a Xid 0 
+	if resp.Err != nil {
+		return []string{}, &Stat{}, resp.Err 
+	}
+
+	if resp.Hdr.Err != 0 {
+		return []string{}, &Stat{}, errorCodeToErr[ErrCode(resp.Hdr.Err)]
+	}
+	// return resp.Resp.(statResponse), nil
+	z.z.lastZxid = resp.Hdr.Zxid
+	return resp.Resp.(*GetChildrenResponse).Children, &Stat{}, nil
+}
+
+func (z *ZKClient) ChildrenW(path string) ([]string, *Stat, error) {
+	req := &GetChildren2Request{Path:path, Watch:true}
+	resp := z.z.GetChildren2(0, req) // mock a Xid 0 
+	if resp.Err != nil {
+		return []string{}, &Stat{}, resp.Err 
+	}
+
+	if resp.Hdr.Err != 0 {
+		return []string{}, &Stat{}, errorCodeToErr[ErrCode(resp.Hdr.Err)]
+	}
+	// return resp.Resp.(statResponse), nil
+	z.z.lastZxid = resp.Hdr.Zxid
+	return resp.Resp.(*GetChildren2Response).Children, &resp.Resp.(*GetChildren2Response).Stat, nil
+}
+
 func (z *ZKClient) ExistsW(path string) (bool, *Stat, error)  {
 
 	// TODO: do SetWatchRequest
