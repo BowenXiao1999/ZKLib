@@ -146,6 +146,34 @@ func TestWatches(t *testing.T)  {
 	time.Sleep(100 * time.Millisecond)
 }
 
+func TestGetChildren(t *testing.T)  {
+	zk := NewZKClient([]string{"127.0.0.1:2379"})
+
+	_ = zk.Delete(Path, -1)
+
+	// TODO: Flags Sequence Not Work
+	_, err := zk.Create(Path, []byte("9999"), 1, []ACL{ACL{}}) // mock ACL and flags
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = zk.Create(Path+"/child1", []byte("9999"), 1, []ACL{ACL{}}) // mock ACL and flags
+	if err != nil {
+		t.Error(err)
+	}
+
+	resp, _, err := zk.Children(Path)	
+	// expect to be 9999
+	// fmt.Println(resp)
+	if resp[0] != "child1" {
+		t.Error(err)
+	}
+
+	_ = zk.Delete(Path, -1)
+	_ = zk.Delete(Path+"/child1", -1)
+}
+
+
 // zk watch 回调函数
 func testCallBack(event *WatcherEvent) {
 	// zk.EventNodeCreated
