@@ -20,8 +20,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4772a5e7-ec3c-44ba-8f74-5e4a9fa7c3bf" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/zketcd_lib_util.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/zketcd_lib_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/zketcd_lib_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,5 +72,23 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="688" y="147" width="543" height="732" key="find.popup" timestamp="1598589588605">
+      <screen x="0" y="0" width="1920" height="1026" />
+    </state>
+    <state x="688" y="147" width="543" height="732" key="find.popup/0.0.1920.1026@0.0.1920.1026" timestamp="1598589588605" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/zketcd_lib_test.go</url>
+          <line>11</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
