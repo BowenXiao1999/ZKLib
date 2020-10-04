@@ -19,9 +19,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4772a5e7-ec3c-44ba-8f74-5e4a9fa7c3bf" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="4772a5e7-ec3c-44ba-8f74-5e4a9fa7c3bf" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -50,7 +48,7 @@
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.vendoring.notification.had.been.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Online-CS/6.824" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -75,6 +73,10 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="743" y="271" width="426" height="496" key="FileChooserDialogImpl" timestamp="1599838520431">
+      <screen x="0" y="0" width="1920" height="1026" />
+    </state>
+    <state x="743" y="271" width="426" height="496" key="FileChooserDialogImpl/0.0.1920.1026@0.0.1920.1026" timestamp="1599838520431" />
     <state x="688" y="147" width="543" height="732" key="find.popup" timestamp="1598589588605">
       <screen x="0" y="0" width="1920" height="1026" />
     </state>

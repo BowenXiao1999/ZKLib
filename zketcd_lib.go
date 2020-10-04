@@ -23,26 +23,24 @@ import (
 	// "strings"
 	// "time"
 
-	etcd "github.com/coreos/etcd/clientv3"
 	"errors"
+	etcd "github.com/coreos/etcd/clientv3"
 	// v3sync "github.com/coreos/etcd/clientv3/concurrency"
 
 	// "net"
-	"github.com/golang/glog"
 	"context"
+	"github.com/golang/glog"
 )
 
 type wrapZKEtcd struct {
 	*zkEtcd
-	cb callback
+	cb       callback
 	lastZxid ZXid
 }
 
 type ZKClient struct {
 	z *wrapZKEtcd
 }
-
-
 
 func NewZKClient(etcdEps []string) *ZKClient {
 	// talk to the etcd3 server and new a etcd client
@@ -63,16 +61,16 @@ func NewZKClient(etcdEps []string) *ZKClient {
 	zk := NewZKEtcd(c, s).(*zkEtcd)
 	wrapZK := &wrapZKEtcd{zk, emptyCB, 0}
 	ret := &ZKClient{wrapZK}
-	
+
 	return ret
 }
 
 // not support flags, acl yet
 func (z *ZKClient) Create(path string, data []byte, flags int32, acl []ACL) (string, error) {
-	req := &CreateRequest{Path:path, Data:data, Acl:acl, Flags:flags}
-	resp := z.z.Create(0, req) // mock a Xid 0 
+	req := &CreateRequest{Path: path, Data: data, Acl: acl, Flags: flags}
+	resp := z.z.Create(0, req) // mock a Xid 0
 	if resp.Err != nil {
-		return "", resp.Err 
+		return "", resp.Err
 	}
 
 	if resp.Hdr.Err != 0 {
@@ -85,14 +83,14 @@ func (z *ZKClient) Create(path string, data []byte, flags int32, acl []ACL) (str
 }
 
 func (z *ZKClient) Delete(path string, version int32) error {
-	req := &DeleteRequest{Path:path,  Version:Ver(version)}
+	req := &DeleteRequest{Path: path, Version: Ver(version)}
 	resp := z.z.Delete(0, req)
 	if resp.Err != nil {
 		return resp.Err
 	}
 
 	if resp.Hdr.Err != 0 {
-		return errorCodeToErr[ErrCode(resp.Hdr.Err)] 
+		return errorCodeToErr[ErrCode(resp.Hdr.Err)]
 	}
 
 	z.z.lastZxid = resp.Hdr.Zxid
@@ -100,7 +98,7 @@ func (z *ZKClient) Delete(path string, version int32) error {
 }
 
 func (z *ZKClient) Get(path string) ([]byte, error) {
-	req := &GetDataRequest{Path:path}
+	req := &GetDataRequest{Path: path}
 	resp := z.z.GetData(0, req)
 	if resp.Err != nil {
 		return []byte{}, resp.Err
@@ -117,7 +115,7 @@ func (z *ZKClient) Get(path string) ([]byte, error) {
 }
 
 func (z *ZKClient) Set(path string, data []byte, version int32) (*Stat, error) {
-	req := &SetDataRequest{Path:path, Data:data, Version:Ver(version)}
+	req := &SetDataRequest{Path: path, Data: data, Version: Ver(version)}
 	resp := z.z.SetData(0, req)
 	if resp.Err != nil {
 		return &Stat{}, resp.Err
@@ -167,8 +165,8 @@ func newSessionForLib(c *etcd.Client, id etcd.LeaseID) (*session, error) {
 				s.mu.Lock()
 				s.leaseZXid = ZXid(ka.ResponseHeader.Revision)
 				s.mu.Unlock()
-			// case <-s.StopNotify():
-			// 	return
+				// case <-s.StopNotify():
+				// 	return
 			}
 		}
 	}()
@@ -178,10 +176,10 @@ func newSessionForLib(c *etcd.Client, id etcd.LeaseID) (*session, error) {
 
 // TODO
 func (z *ZKClient) Exists(path string) (bool, *Stat, error) {
-	req := &ExistsRequest{Path:path}
-	resp := z.z.Exists(0, req) // mock a Xid 0 
+	req := &ExistsRequest{Path: path}
+	resp := z.z.Exists(0, req) // mock a Xid 0
 	if resp.Err != nil {
-		return false, &Stat{}, resp.Err 
+		return false, &Stat{}, resp.Err
 	}
 
 	if resp.Hdr.Err != 0 {
@@ -193,10 +191,10 @@ func (z *ZKClient) Exists(path string) (bool, *Stat, error) {
 }
 
 func (z *ZKClient) Children(path string) ([]string, *Stat, error) {
-	req := &GetChildrenRequest{Path:path}
-	resp := z.z.GetChildren(0, req) // mock a Xid 0 
+	req := &GetChildrenRequest{Path: path}
+	resp := z.z.GetChildren(0, req) // mock a Xid 0
 	if resp.Err != nil {
-		return []string{}, &Stat{}, resp.Err 
+		return []string{}, &Stat{}, resp.Err
 	}
 
 	if resp.Hdr.Err != 0 {
@@ -208,10 +206,10 @@ func (z *ZKClient) Children(path string) ([]string, *Stat, error) {
 }
 
 func (z *ZKClient) ChildrenW(path string) ([]string, *Stat, error) {
-	req := &GetChildren2Request{Path:path, Watch:true}
-	resp := z.z.GetChildren2(0, req) // mock a Xid 0 
+	req := &GetChildren2Request{Path: path, Watch: true}
+	resp := z.z.GetChildren2(0, req) // mock a Xid 0
 	if resp.Err != nil {
-		return []string{}, &Stat{}, resp.Err 
+		return []string{}, &Stat{}, resp.Err
 	}
 
 	if resp.Hdr.Err != 0 {
@@ -222,13 +220,13 @@ func (z *ZKClient) ChildrenW(path string) ([]string, *Stat, error) {
 	return resp.Resp.(*GetChildren2Response).Children, &resp.Resp.(*GetChildren2Response).Stat, nil
 }
 
-func (z *ZKClient) ExistsW(path string) (bool, *Stat, error)  {
+func (z *ZKClient) ExistsW(path string) (bool, *Stat, error) {
 
 	// TODO: do SetWatchRequest
-	req := &SetWatchesRequest{DataWatches:[]string{path}, RelativeZxid:ZXid(z.z.lastZxid)}
-	resp := z.z.SetWatches(0, req) // mock a Xid 0 
+	req := &SetWatchesRequest{DataWatches: []string{path}, RelativeZxid: ZXid(z.z.lastZxid)}
+	resp := z.z.SetWatches(0, req) // mock a Xid 0
 	if resp.Err != nil {
-		return false, &Stat{}, resp.Err 
+		return false, &Stat{}, resp.Err
 	}
 
 	if resp.Hdr.Err != 0 {
@@ -316,12 +314,11 @@ func (z *wrapZKEtcd) SetWatches(xid Xid, op *SetWatchesRequest) ZKResponse {
 }
 
 func (z *ZKClient) setCallBack(c callback) {
-	z.z.cb = c;
+	z.z.cb = c
 }
 
-type callback func(w *WatcherEvent) 
+type callback func(w *WatcherEvent)
 
-func emptyCB(w *WatcherEvent)  {
-	
+func emptyCB(w *WatcherEvent) {
+
 }
-

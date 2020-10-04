@@ -2,14 +2,14 @@ package zetcd
 
 import "testing"
 
-func Create(zk *ZKClient, Path string, data []byte, flags int32, acl []ACL, t *testing.T)  {
+func Create(zk *ZKClient, Path string, data []byte, flags int32, acl []ACL, t *testing.T) {
 	_, err := zk.Create(Path, data, flags, acl) // mock ACL and flags
 	if err != ErrNodeExists && err != nil {
 		t.Error(err)
 	}
 }
 
-func Set(zk *ZKClient, Path string, data []byte, version int32, t *testing.T, e error)  {
+func Set(zk *ZKClient, Path string, data []byte, version int32, t *testing.T, e error) {
 	_, err := zk.Set(Path, data, version)
 	if err != e {
 		t.Error(err)

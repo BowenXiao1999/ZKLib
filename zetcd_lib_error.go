@@ -1,6 +1,5 @@
 package zetcd
 
-
 var (
 	errorCodeToErr = map[ErrCode]error{
 		errBadArguments: ErrBadArguments,
@@ -11,5 +10,4 @@ var (
 		errAPIError:     ErrAPIError,
 		errNotEmpty:     ErrNotEmpty,
 	}
-
 )
